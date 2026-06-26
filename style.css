@@ -67,6 +67,18 @@ body {
   padding: 0;
   margin: 0;
   cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.jerry-icon:hover,
+.pause-btn:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+.jerry-icon:active,
+.pause-btn:active {
+  transform: scale(0.95);
 }
 
 .jerry-icon img,
@@ -98,7 +110,38 @@ body {
   font-size: 0.8rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-weight: 700;
+}
+
+/* Styling for the interactive dirty droplet */
+.dirty-droplet {
+  /* Use clamp() to scale droplets responsively: minimum 60px, preferred 12vw, maximum 120px */
+  /* This ensures droplets are smaller on mobile devices and larger on desktop */
+  width: clamp(60px, 12vw, 120px);
+  height: clamp(60px, 12vw, 120px);
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.3s ease;
+}
+
+/* Hover effect for visual feedback */
+.dirty-droplet:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+/* Fade-out animation when clicked */
+.dirty-droplet.fade-out {
+  animation: fadeOut 0.5s ease forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
 }
 
 .timer-value {
@@ -110,6 +153,7 @@ body {
 }
 
 .content-box {
+  position: relative;
   display: grid;
   place-items: center;
   padding: 1.25rem;
@@ -175,6 +219,278 @@ body {
     color: #ffc907
 }
 
+/* Styling for the start button */
+.start-button {
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background-color: #ffc907;
+  color: #1a1a1a;
+  border: 2px solid #ffc907;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.start-button:hover {
+  transform: scale(1.05);
+}
+
+.start-button:active {
+  transform: scale(0.98);
+}
+
+/* Container for game result screens (win or lose) */
+.game-result-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  border-radius: 1.75rem;
+  text-align: center;
+  animation: slideIn 0.5s ease;
+}
+
+/* Animation for result screens sliding in */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Win screen styling */
+.win-screen {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+  border: 2px solid var(--green);
+}
+
+/* Lose screen styling */
+.lose-screen {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+  border: 2px solid var(--red);
+}
+
+/* Title text for result screens */
+.result-title {
+  margin: 0 0 1rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.win-screen .result-title {
+  color: var(--green);
+}
+
+.lose-screen .result-title {
+  color: var(--red);
+}
+
+/* Message text for result screens */
+.result-message {
+  margin: 0 0 1.5rem;
+  font-size: 1.25rem;
+  color: #f8fafc;
+}
+
+/* Bonus and impurities info text */
+.bonus-message,
+.impurities-left {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+/* Final score display */
+.final-score {
+  margin: 1.5rem 0 2rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* Result button styling */
+.result-button {
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--accent), #fbbf24);
+  color: #000;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(250, 204, 21, 0.3);
+}
+
+.result-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(250, 204, 21, 0.5);
+}
+
+.result-button:active {
+  transform: scale(0.98);
+}
+
+/* Styling for the clean droplet (penalty droplet) */
+.clean-droplet {
+  /* Use clamp() to scale droplets responsively: minimum 60px, preferred 12vw, maximum 120px */
+  /* This ensures droplets are smaller on mobile devices and larger on desktop */
+  width: clamp(60px, 12vw, 120px);
+  height: clamp(60px, 12vw, 120px);
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.3s ease;
+  opacity: 0.7;
+}
+
+/* Hover effect for clean droplet (different from dirty droplet) */
+.clean-droplet:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+/* Fade-out animation when clean droplet is clicked */
+.clean-droplet.fade-out {
+  animation: fadeOut 0.5s ease forwards;
+}
+
+/* Animation for score gain (green highlight) */
+@keyframes scoreGainPulse {
+  0% {
+    color: #ffc907;
+  }
+  50% {
+    color: var(--green);
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+  }
+  100% {
+    color: #ffc907;
+  }
+}
+
+/* Animation for score loss (red highlight) */
+@keyframes scoreLossPulse {
+  0% {
+    color: #ffc907;
+  }
+  50% {
+    color: var(--red);
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+  }
+  100% {
+    color: #ffc907;
+  }
+}
+
+/* Apply green highlight when gaining points */
+.scoreValue.score-gain {
+  animation: scoreGainPulse 1s ease;
+}
+
+/* Apply red highlight when losing points */
+.scoreValue.score-loss {
+  animation: scoreLossPulse 1s ease;
+}
+
+/* Pause screen styling */
+.pause-screen {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(96, 165, 250, 0.1));
+  border: 2px solid var(--brand);
+}
+
+.pause-screen .result-title {
+  color: var(--brand);
+}
+
+/* Container for pause menu buttons */
+.pause-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 250px;
+}
+
+.pause-buttons .result-button {
+  width: 100%;
+}
+
+/* Instruction screen styling */
+.instruction-screen {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(56, 189, 248, 0.1));
+  border: 2px solid var(--blue);
+}
+
+.instruction-screen .result-title {
+  color: var(--blue);
+  margin-bottom: 2rem;
+}
+
+/* Container for instruction content */
+.instruction-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+/* Individual instruction item styling */
+.instruction-item {
+  padding: 1.25rem;
+  background: rgba(30, 41, 59, 0.7);
+  border-left: 4px solid var(--blue);
+  border-radius: 0.5rem;
+  text-align: left;
+}
+
+/* Label for each instruction (dirty droplets, clean droplets, etc.) */
+.instruction-label {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+/* Text content of each instruction */
+.instruction-text {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #f8fafc;
+}
+
+/* Highlight colors for different point values */
+.highlight-green {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.highlight-red {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.highlight-yellow {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 
 /* Tablet breakpoint: keep the same top/bottom bar layout and scale sizes */
 @media (max-width: 820px) {
@@ -194,6 +510,12 @@ body {
   .pause-btn img {
     width: 120px;
     height: 120px;
+  }
+
+  .jerry-icon:hover,
+  .pause-Btn:hover {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
   }
 
   .content-box {
