@@ -11,8 +11,8 @@ let contentBox = document.querySelector(".content-box");
 
 // Initialize score and impurities variables
 let currentScore = 0;
-let currentImpurities = 10;
-let initialImpurities = 10; // Store initial impurities for win condition
+let initialImpurities = 15; // Store initial impurities for win condition
+let currentImpurities = initialImpurities; // Initialize current impurities with the initial value
 
 // Counter to give each spawned droplet a unique ID for tracking
 let dropletCounter = 0;
@@ -25,6 +25,7 @@ let countdownInterval = null; // Reference to countdown interval for cleanup
 let spawnInterval = null; // Reference to spawn interval for cleanup
 let pauseBtn = document.getElementById("pauseBtn"); // Reference to pause button
 
+
 // Function to highlight the score display with a color for feedback
 function highlightScore(color) {
   // Add the appropriate highlight class (score-gain or score-loss)
@@ -36,8 +37,9 @@ function highlightScore(color) {
   }, 1000);
 }
 
-// Function to handle clicking on a dynamically spawned dirty droplet
-function handleDirtyDropletClick(event) {
+
+// Shared click handler for both droplet types
+function handleDropletClick(event, dropletType) {
   // Only process clicks if the game is active, not paused, and not already over
   if (!gameStarted || gameOver || gamePaused) return;
   
@@ -46,172 +48,89 @@ function handleDirtyDropletClick(event) {
   
   // Add fade-out animation class for smooth disappearance
   droplet.classList.add("fade-out");
+
+  // Make the droplet non-clickable to prevent multiple clicks
+  droplet.style.pointerEvents = "none";
   
   // Wait for animation to complete before removing the element
   setTimeout(function() {
     droplet.remove();
   }, 500);
-  
-  // Increase score by 50 points when dirty droplet is clicked
-  currentScore += 50;
-  scoreDisplay.textContent = currentScore;
-  
-  // Highlight the score in green to indicate points gained
-  highlightScore("score-gain");
-  
-  // Decrease impurities by 1 (representing one purified droplet)
-  if (currentImpurities > 0) {
-    currentImpurities--;
-    impuritiesDisplay.textContent = currentImpurities;
-    
-    // Check if the player has cleared all impurities (win condition)
-    if (currentImpurities === 0) {
-      winGame();
+
+  if (dropletType === "dirty") {
+    // Increase score by 50 points when dirty droplet is clicked
+    currentScore += 50;
+    scoreDisplay.textContent = currentScore;
+
+    // Highlight the score in green to indicate points gained
+    highlightScore("score-gain");
+
+    // Decrease impurities by 1 (representing one purified droplet)
+    if (currentImpurities > 0) {
+      currentImpurities--;
+      impuritiesDisplay.textContent = currentImpurities;
+
+      // Check if the player has cleared all impurities (win condition)
+      if (currentImpurities === 0) {
+        winGame();
+      }
     }
+  } else {
+    // Decrease score by 50 points when clean droplet is clicked (penalty)
+    currentScore -= 50;
+    // Ensure score doesn't go below 0
+    if (currentScore < 0) {
+      currentScore = 0;
+    }
+    scoreDisplay.textContent = currentScore;
+
+    // Highlight the score in red to indicate points lost
+    highlightScore("score-loss");
   }
 }
 
-// Function to handle clicking on a dynamically spawned clean droplet
-function handleCleanDropletClick(event) {
-  // Only process clicks if the game is active, not paused, and not already over
-  if (!gameStarted || gameOver || gamePaused) return;
-  
-  // Get the clicked clean droplet element
-  const droplet = event.target;
-  
-  // Add fade-out animation class for smooth disappearance
-  droplet.classList.add("fade-out");
-  
-  // Wait for animation to complete before removing the element
-  setTimeout(function() {
-    droplet.remove();
-  }, 500);
-  
-  // Decrease score by 50 points when clean droplet is clicked (penalty)
-  currentScore -= 50;
-  // Ensure score doesn't go below 0
-  if (currentScore < 0) {
-    currentScore = 0;
-  }
-  scoreDisplay.textContent = currentScore;
-  
-  // Highlight the score in red to indicate points lost
-  highlightScore("score-loss");
-}
 
-// Function to spawn a new clean droplet at a random position
-function spawnCleanDroplet() {
-  // Create a new image element for the clean droplet
-  const newCleanDroplet = document.createElement("img");
-  
-  // Set the image source to the clean droplet image
-  newCleanDroplet.src = "img/cleanDroplet.png";
-  newCleanDroplet.alt = "Clean water droplet";
-  
-  // Give the clean droplet a unique ID for tracking
-  newCleanDroplet.id = "clean-droplet-" + dropletCounter;
+// Shared spawn function for clean and dirty droplets
+function spawnDroplet(dropletType) {
+  const droplet = document.createElement("img");
+  const isDirty = dropletType === "dirty";
+
+  droplet.src = isDirty ? "img/dirtyDroplet.png" : "img/cleanDroplet.png";
+  droplet.alt = isDirty ? "Dirty water droplet" : "Clean water droplet";
+  droplet.id = (isDirty ? "droplet-" : "clean-droplet-") + dropletCounter;
   dropletCounter++;
-  
-  // Add the clean-droplet class for styling
-  newCleanDroplet.classList.add("clean-droplet");
-  
-  // Temporarily add to DOM to calculate actual rendered dimensions
-  // This is necessary because CSS uses responsive units (vw)
-  contentBox.appendChild(newCleanDroplet);
-  
-  // Get the actual computed dimensions of the clean droplet (accounting for responsive sizing)
-  const dropletWidth = newCleanDroplet.offsetWidth;
-  const dropletHeight = newCleanDroplet.offsetHeight;
-  
-  // Get the dimensions of the content box to calculate random positions
+  droplet.classList.add(isDirty ? "dirty-droplet" : "clean-droplet");
+
+  // Temporarily add to DOM to calculate actual rendered dimensions.
+  contentBox.appendChild(droplet);
+
+  // Get dimensions for randomized positioning within the content area.
+  const dropletWidth = droplet.offsetWidth;
+  const dropletHeight = droplet.offsetHeight;
   const boxWidth = contentBox.offsetWidth;
   const boxHeight = contentBox.offsetHeight;
-  
-  // Generate random horizontal position (accounting for actual droplet width)
   const randomX = Math.random() * (boxWidth - dropletWidth);
-  
-  // Generate random vertical position (accounting for actual droplet height)
   const randomY = Math.random() * (boxHeight - dropletHeight);
-  
-  // Set the clean droplet's position using inline styles
-  newCleanDroplet.style.position = "absolute";
-  newCleanDroplet.style.left = randomX + "px";
-  newCleanDroplet.style.top = randomY + "px";
-  
-  // Add click event listener to the newly created clean droplet
-  newCleanDroplet.addEventListener("click", handleCleanDropletClick);
-  
-  // Set a timer to remove the clean droplet after 5 seconds if it hasn't been clicked
+
+  droplet.style.position = "absolute";
+  droplet.style.left = randomX + "px";
+  droplet.style.top = randomY + "px";
+
+  droplet.addEventListener("click", function(event) {
+    handleDropletClick(event, dropletType);
+  });
+
+  // Remove droplet after 2 seconds if it hasn't been clicked.
   setTimeout(function() {
-    // Check if the clean droplet still exists in the DOM (it might have been clicked)
-    if (contentBox.contains(newCleanDroplet)) {
-      // Add fade-out animation
-      newCleanDroplet.classList.add("fade-out");
-      
-      // Wait for animation to complete before removing
+    if (contentBox.contains(droplet)) {
+      droplet.classList.add("fade-out");
       setTimeout(function() {
-        newCleanDroplet.remove();
+        droplet.remove();
       }, 300);
     }
-  }, 5000);
+  }, 2000);
 }
 
-// Function to spawn a new dirty droplet at a random position
-function spawnDirtyDroplet() {
-  // Create a new image element for the droplet
-  const newDroplet = document.createElement("img");
-  
-  // Set the image source to the dirty droplet image
-  newDroplet.src = "img/dirtyDroplet.png";
-  newDroplet.alt = "Dirty water droplet";
-  
-  // Give the droplet a unique ID for tracking
-  newDroplet.id = "droplet-" + dropletCounter;
-  dropletCounter++;
-  
-  // Add the dirty-droplet class for styling
-  newDroplet.classList.add("dirty-droplet");
-  
-  // Temporarily add to DOM to calculate actual rendered dimensions
-  // This is necessary because CSS uses responsive units (vw)
-  contentBox.appendChild(newDroplet);
-  
-  // Get the actual computed dimensions of the droplet (accounting for responsive sizing)
-  const dropletWidth = newDroplet.offsetWidth;
-  const dropletHeight = newDroplet.offsetHeight;
-  
-  // Get the dimensions of the content box to calculate random positions
-  const boxWidth = contentBox.offsetWidth;
-  const boxHeight = contentBox.offsetHeight;
-  
-  // Generate random horizontal position (accounting for actual droplet width)
-  const randomX = Math.random() * (boxWidth - dropletWidth);
-  
-  // Generate random vertical position (accounting for actual droplet height)
-  const randomY = Math.random() * (boxHeight - dropletHeight);
-  
-  // Set the droplet's position using inline styles
-  newDroplet.style.position = "absolute";
-  newDroplet.style.left = randomX + "px";
-  newDroplet.style.top = randomY + "px";
-  
-  // Add click event listener to the newly created droplet
-  newDroplet.addEventListener("click", handleDirtyDropletClick);
-  
-  // Set a timer to remove the droplet after 5 seconds if it hasn't been clicked
-  setTimeout(function() {
-    // Check if the droplet still exists in the DOM (it might have been clicked)
-    if (contentBox.contains(newDroplet)) {
-      // Add fade-out animation
-      newDroplet.classList.add("fade-out");
-      
-      // Wait for animation to complete before removing
-      setTimeout(function() {
-        newDroplet.remove();
-      }, 300);
-    }
-  }, 5000);
-}
 
 // Function to start spawning droplets at regular intervals
 function startSpawningDroplets() {
@@ -220,19 +139,20 @@ function startSpawningDroplets() {
   spawnInterval = setInterval(function() {
     // Only spawn droplets if the game is still running (timer > 0) and not paused
     if (timerValue > 0 && !gamePaused) {
-      // Randomly decide whether to spawn a dirty or clean droplet (70% dirty, 30% clean)
+      // Randomly decide whether to spawn a dirty or clean droplet (60% dirty, 40% clean)
       const dropletType = Math.random();
-      if (dropletType < 0.7) {
-        spawnDirtyDroplet();
+      if (dropletType < 0.6) {
+        spawnDroplet("dirty");
       } else {
-        spawnCleanDroplet();
+        spawnDroplet("clean");
       }
     } else if (timerValue <= 0) {
       // Stop spawning droplets when the game timer reaches 0
       clearInterval(spawnInterval);
     }
-  }, 1000);
+  }, 750);
 }
+
 
 // Function to display the pause menu screen
 function showPauseMenu() {
@@ -262,6 +182,7 @@ function showPauseMenu() {
   contentBox.appendChild(pauseMenu);
 }
 
+
 // Function to resume the game from pause
 function resumeGame() {
   // Remove the pause menu
@@ -280,6 +201,7 @@ function resumeGame() {
   startSpawningDroplets();
 }
 
+
 // Function to handle the pause button click
 function handlePauseButtonClick() {
   // Only allow pause if the game is actively running
@@ -287,6 +209,7 @@ function handlePauseButtonClick() {
     showPauseMenu();
   }
 }
+
 
 // Function to display the win screen with bonus points
 function winGame() {
@@ -313,8 +236,8 @@ function winGame() {
   const winScreen = document.createElement("div");
   winScreen.className = "game-result-screen win-screen";
   winScreen.innerHTML = `
-    <h2 class="result-title">YOU WIN!</h2>
-    <p class="result-message">All impurities purified!</p>
+    <h2 class="result-title">MISSION COMPLETE</h2>
+    <p class="result-message">Dispatcher: "Water is now all clean and safe to drink! It's all thanks to you, The Purifier!"</p>
     <p class="bonus-message">Bonus: +${bonusPoints} points (${timerValue}s × 50)</p>
     <p class="final-score">Final Score: ${currentScore}</p>
     <button class="result-button" onclick="location.reload()">Play Again</button>
@@ -323,6 +246,7 @@ function winGame() {
   // Add the win screen to the content box
   contentBox.appendChild(winScreen);
 }
+
 
 // Function to display the lose screen when time runs out
 function loseGame() {
@@ -341,8 +265,8 @@ function loseGame() {
   const loseScreen = document.createElement("div");
   loseScreen.className = "game-result-screen lose-screen";
   loseScreen.innerHTML = `
-    <h2 class="result-title">GAME OVER</h2>
-    <p class="result-message">Time ran out!</p>
+    <h2 class="result-title">MISSION FAILED</h2>
+    <p class="result-message">Dispatcher: "Oh no! We didn't clean all the water in time!"</p>
     <p class="impurities-left">Impurities remaining: ${currentImpurities}/${initialImpurities}</p>
     <p class="final-score">Final Score: ${currentScore}</p>
     <button class="result-button" onclick="location.reload()">Try Again</button>
@@ -352,51 +276,25 @@ function loseGame() {
   contentBox.appendChild(loseScreen);
 }
 
-// Function to display the instruction screen at the start of the game
-function showInstructionScreen() {
-  // Hide the start button
+
+// Function to start the game when the player clicks the start button
+function startGame() {
+  // Hide the start button once gameplay begins
   const startBtn = document.getElementById("startBtn");
   startBtn.style.display = "none";
-  
-  // Create and display the instruction screen
-  const instructionScreen = document.createElement("div");
-  instructionScreen.className = "game-result-screen instruction-screen";
-  instructionScreen.id = "instructionScreen";
-  instructionScreen.innerHTML = `
-    <h2 class="result-title">HOW TO PLAY</h2>
-    <div class="instruction-content">
-      <div class="instruction-item">
-        <p class="instruction-label">✓ DIRTY WATER DROPLETS</p>
-        <p class="instruction-text">Click on these to eliminate impurities and gain <span class="highlight-green">+50 POINTS</span></p>
-      </div>
-      <div class="instruction-item">
-        <p class="instruction-label">✗ CLEAN WATER DROPLETS</p>
-        <p class="instruction-text">Avoid clicking these or you will lose <span class="highlight-red">50 POINTS</span></p>
-      </div>
-      <div class="instruction-item">
-        <p class="instruction-label">⏱ TIME LIMIT</p>
-        <p class="instruction-text">Eliminate all <span class="highlight-yellow">10 IMPURITIES</span> before time runs out!</p>
-      </div>
-    </div>
-    <button class="result-button" onclick="startGameplay()">START</button>
-  `;
-  
-  // Add the instruction screen to the content box
-  contentBox.appendChild(instructionScreen);
-}
 
-// Function to start the actual gameplay after viewing instructions
-function startGameplay() {
-  // Remove the instruction screen
-  const instructionScreen = document.getElementById("instructionScreen");
-  if (instructionScreen) {
-    instructionScreen.remove();
-  }
-  
   // Set game state flags
   gameStarted = true;
   gameOver = false;
   gamePaused = false;
+
+  // Reset game variables
+  currentScore = 0;
+  currentImpurities = initialImpurities;
+  // Reset the score and impurities display
+  scoreDisplay.textContent = currentScore;
+  impuritiesValue.textContent = currentImpurities;
+  totalImpuritiesValue.textContent = initialImpurities;
   
   // Reset timer value to initial value
   timerValue = initialTimerValue;
@@ -409,11 +307,6 @@ function startGameplay() {
   startSpawningDroplets();
 }
 
-// Function to start the game when the player clicks the start button
-function startGame() {
-  // Show the instruction screen instead of starting immediately
-  showInstructionScreen();
-}
 
 // Function to start the countdown timer
 function startCountdown(){
@@ -436,6 +329,7 @@ function startCountdown(){
         }
     }, 1000);
 }
+
 
 // Add event listener to the start button
 document.getElementById("startBtn").addEventListener("click", startGame);

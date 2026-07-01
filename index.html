@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>The Purifier</title>
+  <title>The Purifier | charity: water</title>
   <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -16,7 +16,7 @@
       <div class="status-display">
         <div class="timer-block">
           <p class="timer-label">TIME LEFT</p>
-          <span class="timer-value" id="timerValue">30</span>
+          <span class="timer-value" id="timerValue">-</span>
         </div>
         <button class="pause-btn" id="pauseBtn" type="button">
             <img src="img/pausebutton.png" alt="Pause icon"/>
@@ -37,8 +37,8 @@
       <div class="bottom-content">
         <p class="machine-label">THE PURIFIER</p>
         <div class="statValues">
-            <p class="stat-line">SCORE: <span id="scoreValue" class="scoreValue">0</span></p>
-            <p class="stat-line">IMPURITIES LEFT: <span id="impuritiesValue" class="scoreValue">10</span>/<span id="totalImpuritiesValue" class="scoreValue">10</span></p>
+            <p class="stat-line score-line"><span class="scoreTitle">SCORE:</span><span id="scoreValue" class="scoreValue">-</span></p>
+          <p class="stat-line impurities-line"><span class="impuritiesTitle">IMPURITIES:</span><span class="impuritiesValueGroup"><span id="impuritiesValue" class="scoreValue">-</span>/<span id="totalImpuritiesValue" class="scoreValue">-</span></span></p>
         </div>
       </div>
     </footer>

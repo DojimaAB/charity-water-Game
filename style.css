@@ -191,9 +191,39 @@ body {
 }
 
 .stat-line {
-    font-size: 30px;
+    font-size: 24px;
     font-weight: bold;
     text-align: left;
+}
+
+.statValues {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 400px;
+}
+
+.statValues .stat-line {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+
+.statValues .score-line {
+  justify-content: space-between;
+}
+
+.statValues .impurities-line {
+  justify-content: space-between;
+}
+
+.scoreTitle {
+  text-align: left;
+}
+
+.impuritiesTitle {
+  text-align: left;
 }
 
 .profile-ring {
@@ -206,16 +236,9 @@ body {
   height:120px;
 }
 
-.statValues {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
 .scoreValue {
     font-weight: bold;
-    align-items: right;
-    justify-content: right;
+  text-align: right;
     color: #ffc907
 }
 
@@ -566,6 +589,10 @@ body {
 
   .stat-line {
     font-size: 1.25rem;
+  }
+
+  .statValues {
+    width: clamp(150px, 250px, 200px);
   }
 
   .timer-value {
