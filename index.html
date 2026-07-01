@@ -25,8 +25,17 @@
     </header>
 
     <main class="content-box" aria-label="Main content area with interactive droplets">
-      <!-- Start button that initializes the game -->
-      <button id="startBtn" class="start-button" type="button">START GAME</button>
+      <div class="start-setup" id="startSetup">
+        <p class="difficulty-label">MISSION DIFFICULTY</p>
+        <div class="difficulty-options" role="group" aria-label="Select game difficulty">
+          <button class="difficulty-option is-active" type="button" data-difficulty="easy" aria-pressed="true">EASY</button>
+          <button class="difficulty-option" type="button" data-difficulty="medium" aria-pressed="false">MEDIUM</button>
+          <button class="difficulty-option" type="button" data-difficulty="hard" aria-pressed="false">HARD</button>
+        </div>
+
+        <!-- Start button that initializes the game -->
+        <button id="startBtn" class="start-button" type="button">START MISSION</button>
+      </div>
       <!-- Dirty droplets will be spawned dynamically by JavaScript -->
     </main>
 
