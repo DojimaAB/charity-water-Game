@@ -2,6 +2,7 @@
 /* ROOT TOKENS AND BASE RESET     */
 /* ============================== */
 :root {
+  /* Shared colors and tokens used throughout the UI. */
   color-scheme: dark;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #0b1220;
@@ -29,6 +30,7 @@ body {
 }
 
 body {
+  /* Centers the full game shell over the background image. */
   display: grid;
   min-height: 100vh;
   background-image: url('img/background.png');
@@ -42,6 +44,7 @@ body {
 /* MAIN SHELL LAYOUT              */
 /* ============================== */
 .game-shell {
+  /* Three-row game layout: top HUD, game area, bottom stats/controls. */
   display: grid;
   grid-template-rows: auto 1fr auto;
   width: min(100%, 600px);
@@ -173,6 +176,7 @@ body {
 }
 
 .content-box {
+  /* Main gameplay area where droplets and overlays appear. */
   position: relative;
   display: grid;
   place-items: center;
@@ -277,6 +281,7 @@ body {
 /* START SETUP AND DIFFICULTY UI  */
 /* ============================== */
 .start-setup {
+  /* Start menu area that holds difficulty buttons and start button. */
   display: grid;
   justify-items: center;
   gap: 0.8rem;
@@ -364,6 +369,7 @@ body {
 /* ============================== */
 /* Container for game result screens (win or lose) */
 .game-result-screen {
+  /* Full overlay used by pause, intro, win, and lose screens. */
   position: absolute;
   inset: 0;
   display: flex;
@@ -537,6 +543,7 @@ body {
 /* ============================== */
 /* Pause screen styling */
 .pause-screen {
+  /* Visual style specific to pause state. */
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(96, 165, 250, 0.1));
   border: 2px solid var(--brand);
 }
@@ -560,6 +567,7 @@ body {
 
 /* Mission briefing / intro dialogue screen styling */
 .tutorial-screen {
+  /* Intro dialogue overlay style. */
   background: linear-gradient(135deg, rgba(14, 116, 144, 0.4), rgba(2, 132, 199, 0.2));
   border: 2px solid #22d3ee;
 }
@@ -669,6 +677,7 @@ body {
 /* ============================== */
 /* Tablet breakpoint: keep the same top/bottom bar layout and scale sizes */
 @media (max-width: 820px) {
+  /* Tablet sizing adjustments. */
   .game-shell {
     min-height: 100vh;
   }
@@ -710,6 +719,7 @@ body {
 
 /* Phone breakpoint: preserve horizontal layout, scale text and icon sizes */
 @media (max-width: 520px) {
+  /* Phone layout adjustments for tighter space. */
 
   .top-bar {
     flex-direction: row;
@@ -841,6 +851,7 @@ body {
 
 /* Very short screens: prioritize visibility over centering */
 @media (max-width: 520px) and (max-height: 700px) {
+  /* On short screens, push overlays upward so content is not cut off. */
   .game-result-screen {
     justify-content: flex-start;
     padding-top: 1rem;

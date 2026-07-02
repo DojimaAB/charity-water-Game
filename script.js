@@ -45,6 +45,7 @@ const shootingSoundPaths = [
 // ==============================
 // MUSIC AND AUDIO TRACKS
 // ==============================
+// These paths point to the music files used in each game state.
 // Background music settings
 const menuThemePath = "sounds/background-music/menuTheme.mp3";
 const missionBriefThemePath = "sounds/background-music/missionBriefTheme.mp3";
@@ -70,6 +71,7 @@ loseTheme.volume = 0.2;
 let activeTheme = null;
 
 // Preset balancing values used by the difficulty selector.
+// Each difficulty changes mission time and how many impurities must be cleared.
 const difficultyPresets = {
   easy: { time: 30, impurities: 15 },
   medium: { time: 25, impurities: 20 },
@@ -79,6 +81,7 @@ const difficultyPresets = {
 // ==============================
 // DIALOGUE SCRIPT CONFIG
 // ==============================
+// This ordered list controls who speaks and what line appears in the intro.
 // Intro briefing script shown after start is pressed.
 let introStep = 0;
 const blackTransitionInMs = 80;
@@ -162,6 +165,7 @@ function stopBackgroundMusic() {
 
 // Switches cleanly between looping theme tracks.
 function playTheme(themeTrack) {
+  // If another theme is active, stop it first so tracks never overlap.
   if (activeTheme && activeTheme !== themeTrack) {
     activeTheme.pause();
     activeTheme.currentTime = 0;
@@ -189,6 +193,7 @@ function playSimpleTypewriterText(element, text, speedMs) {
   let charIndex = 0;
 
   const typingInterval = setInterval(function() {
+    // Reveal one extra character each tick.
     charIndex++;
     element.textContent = text.slice(0, charIndex);
 
@@ -278,6 +283,7 @@ function spawnDroplet(dropletType) {
   contentBox.appendChild(droplet);
 
   // Get dimensions for randomized positioning within the content area.
+  // This keeps droplets fully inside the game box.
   const dropletWidth = droplet.offsetWidth;
   const dropletHeight = droplet.offsetHeight;
   const boxWidth = contentBox.offsetWidth;
@@ -432,9 +438,9 @@ function handlePauseButtonClick() {
   }
 }
 
-  // ==============================
-  // WIN AND LOSE SCREENS
-  // ==============================
+// ==============================
+// WIN AND LOSE SCREENS
+// ==============================
 // Handles mission success state + end overlay.
 function winGame() {
   // Set game over flag to prevent further interactions
@@ -572,6 +578,7 @@ function applyDifficulty(mode) {
 }
 // Shows the mission briefing overlay before gameplay starts.
 function showIntroDialogue() {
+  // Briefing flow: show dialogue -> step lines -> transition -> start gameplay.
   // Switch from menu theme into briefing theme.
   playTheme(missionBriefTheme);
 
@@ -685,6 +692,7 @@ function showIntroDialogue() {
 
   // Reveals the mission-stats line with emphasized dynamic values.
   function typeMissionStatsLine() {
+    // Build this special line in parts so timer/impurity numbers can be styled separately.
     activeDialogueMode = "mission-stats";
     clearTypingAnimation();
     activeTypedText = `"You only have ${initialTimerValue} seconds to purify ${initialImpurities} impurities to complete your mission."`;
@@ -701,6 +709,7 @@ function showIntroDialogue() {
     let segmentIndex = 0;
 
     function typeNextSegment() {
+      // Type one segment at a time; emphasis segments are inserted instantly as <span>.
       if (segmentIndex >= segments.length) {
         clearTypingAnimation();
         return;
@@ -738,6 +747,7 @@ function showIntroDialogue() {
 
   // Renders one line from the briefing script.
   function renderDialogueStep() {
+    // Read the current step, swap speaker/avatar, then type the correct line variant.
     const currentLine = introDialogueLines[introStep];
     dialogueSpeaker.textContent = currentLine.speaker;
 
@@ -756,6 +766,7 @@ function showIntroDialogue() {
     }
 
     if (introStep === introDialogueLines.length - 1) {
+      // Final step: change CTA and hide skip so player starts mission from here.
       dialogueNextBtn.textContent = "Start Mission";
       dialogueSkipBtn.style.display = "none";
     } else {
