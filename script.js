@@ -1,6 +1,6 @@
-// ------------------------------
-// HUD + setup element references
-// ------------------------------
+// ==============================
+// HUD AND STATE REFERENCES
+// ==============================
 let timerDisplay = document.getElementById("timerValue");
 let timerValue = 30;
 let initialTimerValue = 30; // Store the initial timer value for bonus calculation
@@ -42,13 +42,20 @@ const shootingSoundPaths = [
   "sounds/shoot6.mp3",
 ];
 
+// ==============================
+// MUSIC AND AUDIO TRACKS
+// ==============================
 // Background music settings
 const menuThemePath = "sounds/background-music/menuTheme.mp3";
 const missionBriefThemePath = "sounds/background-music/missionBriefTheme.mp3";
 const backgroundMusicPath = "sounds/background-music/backgroundMusic.mp3";
+const winThemePath = "sounds/background-music/winTheme.mp3";
+const loseThemePath = "sounds/background-music/loseTheme.mp3";
 const menuTheme = new Audio(menuThemePath);
 const missionBriefTheme = new Audio(missionBriefThemePath);
 const backgroundMusic = new Audio(backgroundMusicPath);
+const winTheme = new Audio(winThemePath);
+const loseTheme = new Audio(loseThemePath);
 
 menuTheme.loop = true;
 menuTheme.volume = 0.2;
@@ -56,6 +63,10 @@ missionBriefTheme.loop = true;
 missionBriefTheme.volume = 0.2;
 backgroundMusic.loop = true;
 backgroundMusic.volume = 0.22;
+winTheme.loop = false;
+winTheme.volume = 0.2;
+loseTheme.loop = false;
+loseTheme.volume = 0.2;
 let activeTheme = null;
 
 // Preset balancing values used by the difficulty selector.
@@ -65,6 +76,9 @@ const difficultyPresets = {
   hard: { time: 20, impurities: 25 },
 };
 
+// ==============================
+// DIALOGUE SCRIPT CONFIG
+// ==============================
 // Intro briefing script shown after start is pressed.
 let introStep = 0;
 const blackTransitionInMs = 80;
@@ -89,14 +103,13 @@ const introDialogueLines = [
   },
   {
     speaker: "JERRY",
-    line: "You only have a limited amount of time to complete your mission.",
+    type: "mission-stats",
   },
   {
     speaker: "THE PURIFIER",
     line: "Understood. I'll PURIFY every last drop.",
   },
 ];
-
 
 // Function to highlight the score display with a color for feedback
 function highlightScore(color) {
@@ -109,7 +122,9 @@ function highlightScore(color) {
   }, 1000);
 }
 
-
+// ==============================
+// AUDIO AND UI HELPERS
+// ==============================
 // Plays one random shooting sound for click feedback.
 function playShootingSound() {
   const randomIndex = Math.floor(Math.random() * shootingSoundPaths.length);
@@ -166,6 +181,27 @@ function stopActiveTheme() {
 }
 
 
+// Types a short dialogue line into a target element.
+function playSimpleTypewriterText(element, text, speedMs) {
+  if (!element) return;
+
+  element.textContent = "";
+  let charIndex = 0;
+
+  const typingInterval = setInterval(function() {
+    charIndex++;
+    element.textContent = text.slice(0, charIndex);
+
+    if (charIndex >= text.length) {
+      clearInterval(typingInterval);
+    }
+  }, speedMs);
+}
+
+
+// ==============================
+// DROPLET-RELATED FUNCTIONS
+// ==============================
 // Shared click handler for both droplet types
 function handleDropletClick(event, dropletType) {
   // Only process clicks if the game is active, not paused, and not already over
@@ -291,6 +327,12 @@ function clearAllDroplets() {
 }
 
 
+// Toggles crosshair cursor for active gameplay.
+function setGameplayCrosshair(enabled) {
+  contentBox.classList.toggle("gameplay-crosshair", enabled);
+}
+
+
 // Function to start spawning droplets at regular intervals
 function startSpawningDroplets() {
   // Spawn a new droplet every 1 second (1000 milliseconds) for increased difficulty
@@ -313,8 +355,17 @@ function startSpawningDroplets() {
 }
 
 
+
+// ==============================
+// PAUSE MENU FLOW
+// ==============================
 // Shows pause overlay and halts timers/spawn loops.
 function showPauseMenu() {
+  // Do nothing if already paused or pause menu already exists.
+  if (gamePaused || document.getElementById("pauseMenu")) {
+    return;
+  }
+
   // Set pause flag
   gamePaused = true;
   
@@ -326,6 +377,9 @@ function showPauseMenu() {
 
   // Pause background music while game is paused.
   pauseBackgroundMusic();
+
+  // Use normal cursor in pause UI.
+  setGameplayCrosshair(false);
   
   // Create and display the pause menu screen
   const pauseMenu = document.createElement("div");
@@ -358,6 +412,9 @@ function resumeGame() {
 
   // Resume background music when gameplay continues.
   playBackgroundMusic();
+
+  // Re-enable crosshair for active gameplay.
+  setGameplayCrosshair(true);
   
   // Resume the countdown timer
   startCountdown();
@@ -370,12 +427,14 @@ function resumeGame() {
 // Function to handle the pause button click
 function handlePauseButtonClick() {
   // Only allow pause if the game is actively running
-  if (gameStarted && !gameOver) {
+  if (gameStarted && !gameOver && !gamePaused) {
     showPauseMenu();
   }
 }
 
-
+  // ==============================
+  // WIN AND LOSE SCREENS
+  // ==============================
 // Handles mission success state + end overlay.
 function winGame() {
   // Set game over flag to prevent further interactions
@@ -390,6 +449,12 @@ function winGame() {
 
   // Stop active theme music when mission ends.
   stopActiveTheme();
+
+  // Switch to mission-complete theme.
+  playTheme(winTheme);
+
+  // Restore default cursor in end screen.
+  setGameplayCrosshair(false);
   
   // Calculate bonus points based on remaining time (50 points per second)
   const bonusPoints = timerValue * 50;
@@ -404,8 +469,11 @@ function winGame() {
   winScreen.className = "game-result-screen win-screen";
   winScreen.innerHTML = `
     <h2 class="result-title">MISSION COMPLETE</h2>
+    <div class="dialogue-avatar-wrap">
+      <img class="dialogue-avatar" src="img/jerryPfp.png" alt="Jerry avatar" />
+    </div>
     <p class="dialogue-speaker">JERRY</p>
-    <p class="result-message dialogue-line">"You did it! The water is clean and safe, Purifier!"</p>
+    <p class="result-message dialogue-line" id="winDialogueLine"></p>
     <div class="result-details">
       <p class="bonus-message">Bonus: +${bonusPoints} points (${timerValue}s × 50)</p>
       <p class="final-score">Final Score: ${currentScore}</p>
@@ -417,6 +485,12 @@ function winGame() {
   
   // Add the win screen to the content box
   contentBox.appendChild(winScreen);
+
+  playSimpleTypewriterText(
+    document.getElementById("winDialogueLine"),
+    '"You did it! The water is clean and safe, Purifier!"',
+    30
+  );
 }
 
 
@@ -431,6 +505,12 @@ function loseGame() {
 
   // Stop active theme music when mission ends.
   stopActiveTheme();
+
+  // Switch to mission-failed theme.
+  playTheme(loseTheme);
+
+  // Restore default cursor in end screen.
+  setGameplayCrosshair(false);
   
   // Clear any remaining droplets on the screen
   clearAllDroplets();
@@ -440,8 +520,11 @@ function loseGame() {
   loseScreen.className = "game-result-screen lose-screen";
   loseScreen.innerHTML = `
     <h2 class="result-title">MISSION FAILED</h2>
+    <div class="dialogue-avatar-wrap">
+      <img class="dialogue-avatar" src="img/jerryPfp.png" alt="Jerry avatar" />
+    </div>
     <p class="dialogue-speaker">JERRY</p>
-    <p class="result-message dialogue-line">"Oh no! We didn't clean all the water in time!"</p>
+    <p class="result-message dialogue-line" id="loseDialogueLine"></p>
     <div class="result-details">
       <p class="impurities-left">Impurities remaining: ${currentImpurities}/${initialImpurities}</p>
       <p class="final-score">Final Score: ${currentScore}</p>
@@ -453,9 +536,17 @@ function loseGame() {
   
   // Add the lose screen to the content box
   contentBox.appendChild(loseScreen);
+
+  playSimpleTypewriterText(
+    document.getElementById("loseDialogueLine"),
+    '"Oh no! We didn\'t clean all the water in time!"',
+    30
+  );
 }
 
-
+// ==============================
+// DIFFICULTY AND BRIEFING
+// ==============================
 // Applies selected difficulty and refreshes pre-game HUD values.
 function applyDifficulty(mode) {
   const preset = difficultyPresets[mode] || difficultyPresets.easy;
@@ -474,13 +565,11 @@ function applyDifficulty(mode) {
   if (!gameStarted && !gameOver) {
     timerValue = initialTimerValue;
     currentImpurities = initialImpurities;
-    timerDisplay.textContent = timerValue;
-    impuritiesDisplay.textContent = currentImpurities;
-    totalImpuritiesDisplay.textContent = initialImpurities;
+    timerDisplay.textContent = "-";
+    impuritiesDisplay.textContent = "-";
+    totalImpuritiesDisplay.textContent = "-";
   }
 }
-
-
 // Shows the mission briefing overlay before gameplay starts.
 function showIntroDialogue() {
   // Switch from menu theme into briefing theme.
@@ -499,6 +588,9 @@ function showIntroDialogue() {
   dialogueScreen.id = "introDialogueScreen";
   dialogueScreen.innerHTML = `
     <h2 class="result-title">MISSION BRIEFING</h2>
+    <div class="dialogue-avatar-wrap">
+      <img class="dialogue-avatar" id="dialogueAvatar" src="img/jerryPfp.png" alt="Dialogue speaker avatar" />
+    </div>
     <p class="dialogue-speaker" id="dialogueSpeaker"></p>
     <p class="result-message dialogue-line" id="dialogueLine"></p>
     <div class="dialogue-buttons">
@@ -510,16 +602,158 @@ function showIntroDialogue() {
   contentBox.appendChild(dialogueScreen);
 
   const dialogueSpeaker = document.getElementById("dialogueSpeaker");
+  const dialogueAvatar = document.getElementById("dialogueAvatar");
   const dialogueLine = document.getElementById("dialogueLine");
   const dialogueNextBtn = document.getElementById("dialogueNextBtn");
   const dialogueSkipBtn = document.getElementById("dialogueSkipBtn");
   let isTransitioning = false;
+  let typingInterval = null;
+  let isTyping = false;
+  let activeTypedText = "";
+  let activeDialogueMode = "plain";
+  const typingSpeedMs = 30;
+
+  // Stops any in-progress typewriter animation.
+  function clearTypingAnimation() {
+    if (typingInterval) {
+      clearInterval(typingInterval);
+      typingInterval = null;
+    }
+    isTyping = false;
+  }
+
+  // Escapes text before inserting it as HTML.
+  function escapeDialogueText(text) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  // Adds color emphasis to key mission words in dialogue.
+  function applyDialogueHighlights(text) {
+    const escapedText = escapeDialogueText(text);
+
+    return escapedText.replace(/\b(DIRTY|CLEAN|PURIFY)\b/g, function(match) {
+      const upperMatch = match;
+      let highlightClass = "dialogue-highlight-purify";
+
+      if (upperMatch === "DIRTY") {
+        highlightClass = "dialogue-highlight-dirty";
+      } else if (upperMatch === "CLEAN") {
+        highlightClass = "dialogue-highlight-clean";
+      }
+
+      return `<span class="${highlightClass}">${match}</span>`;
+    });
+  }
+
+  // Instantly completes the current line.
+  function completeTypedLine() {
+    clearTypingAnimation();
+
+    if (activeDialogueMode === "mission-stats") {
+      dialogueLine.innerHTML = `"You only have <span class="dialogue-emphasis">${initialTimerValue}</span> seconds to purify <span class="dialogue-emphasis">${initialImpurities}</span> impurities to complete your mission."`;
+      return;
+    }
+
+    dialogueLine.innerHTML = applyDialogueHighlights(activeTypedText);
+  }
+
+  // Reveals one dialogue line character-by-character.
+  function typeDialogueLine(text) {
+    activeDialogueMode = "plain";
+    clearTypingAnimation();
+    activeTypedText = text;
+    dialogueLine.textContent = "";
+
+    let charIndex = 0;
+    isTyping = true;
+
+    typingInterval = setInterval(function() {
+      charIndex++;
+      dialogueLine.innerHTML = applyDialogueHighlights(activeTypedText.slice(0, charIndex));
+
+      if (charIndex >= activeTypedText.length) {
+        clearTypingAnimation();
+        dialogueLine.innerHTML = applyDialogueHighlights(activeTypedText);
+      }
+    }, typingSpeedMs);
+  }
+
+  // Reveals the mission-stats line with emphasized dynamic values.
+  function typeMissionStatsLine() {
+    activeDialogueMode = "mission-stats";
+    clearTypingAnimation();
+    activeTypedText = `"You only have ${initialTimerValue} seconds to purify ${initialImpurities} impurities to complete your mission."`;
+    dialogueLine.innerHTML = "";
+
+    const segments = [
+      { kind: "text", value: '"You only have ' },
+      { kind: "emphasis", value: `${initialTimerValue}` },
+      { kind: "text", value: " seconds to purify " },
+      { kind: "emphasis", value: `${initialImpurities}` },
+      { kind: "text", value: ' impurities to complete your mission."' },
+    ];
+
+    let segmentIndex = 0;
+
+    function typeNextSegment() {
+      if (segmentIndex >= segments.length) {
+        clearTypingAnimation();
+        return;
+      }
+
+      const segment = segments[segmentIndex++];
+
+      if (segment.kind === "emphasis") {
+        const emphasisSpan = document.createElement("span");
+        emphasisSpan.className = "dialogue-emphasis";
+        emphasisSpan.textContent = segment.value;
+        dialogueLine.appendChild(emphasisSpan);
+        typeNextSegment();
+        return;
+      }
+
+      const textNode = document.createTextNode("");
+      dialogueLine.appendChild(textNode);
+      let charIndex = 0;
+
+      typingInterval = setInterval(function() {
+        charIndex++;
+        textNode.nodeValue = segment.value.slice(0, charIndex);
+
+        if (charIndex >= segment.value.length) {
+          clearTypingAnimation();
+          typeNextSegment();
+        }
+      }, typingSpeedMs);
+    }
+
+    isTyping = true;
+    typeNextSegment();
+  }
 
   // Renders one line from the briefing script.
   function renderDialogueStep() {
     const currentLine = introDialogueLines[introStep];
     dialogueSpeaker.textContent = currentLine.speaker;
-    dialogueLine.textContent = `"${currentLine.line}"`;
+
+    if (currentLine.speaker === "JERRY") {
+      dialogueAvatar.src = "img/jerryPfp.png";
+      dialogueAvatar.alt = "Jerry avatar";
+    } else {
+      dialogueAvatar.src = "img/pfp.png";
+      dialogueAvatar.alt = "Purifier avatar";
+    }
+
+    if (currentLine.type === "mission-stats") {
+      typeMissionStatsLine();
+    } else {
+      typeDialogueLine(`"${currentLine.line}"`);
+    }
 
     if (introStep === introDialogueLines.length - 1) {
       dialogueNextBtn.textContent = "Start Mission";
@@ -535,6 +769,8 @@ function showIntroDialogue() {
     if (isTransitioning) return;
     isTransitioning = true;
 
+    clearTypingAnimation();
+
     const screen = document.getElementById("introDialogueScreen");
     if (screen) {
       screen.remove();
@@ -545,6 +781,7 @@ function showIntroDialogue() {
     blackout.style.position = "absolute";
     blackout.style.inset = "0";
     blackout.style.background = "#000";
+    blackout.style.borderRadius = "1.75rem";
     blackout.style.opacity = "0";
     blackout.style.pointerEvents = "none";
     blackout.style.zIndex = "6";
@@ -570,6 +807,11 @@ function showIntroDialogue() {
   }
 
   dialogueNextBtn.addEventListener("click", function() {
+    if (isTyping) {
+      completeTypedLine();
+      return;
+    }
+
     if (introStep < introDialogueLines.length - 1) {
       introStep++;
       renderDialogueStep();
@@ -609,6 +851,9 @@ function startGame() {
 
   // Start looping background music once the mission begins.
   playBackgroundMusic();
+
+  // Enable crosshair cursor during active mission.
+  setGameplayCrosshair(true);
   
   // Start spawning dirty and clean droplets
   startSpawningDroplets();
@@ -637,7 +882,9 @@ function startCountdown(){
     }, 1000);
 }
 
-
+// ==============================
+// EVENT BINDINGS AND BOOTSTRAP
+// ==============================
 // Add event listener to the start button
 document.getElementById("startBtn").addEventListener("click", showIntroDialogue);
 

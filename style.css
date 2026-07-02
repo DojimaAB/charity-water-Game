@@ -1,3 +1,6 @@
+/* ============================== */
+/* ROOT TOKENS AND BASE RESET     */
+/* ============================== */
 :root {
   color-scheme: dark;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -35,6 +38,9 @@ body {
   justify-items: center;
 }
 
+/* ============================== */
+/* MAIN SHELL LAYOUT              */
+/* ============================== */
 .game-shell {
   display: grid;
   grid-template-rows: auto 1fr auto;
@@ -63,6 +69,9 @@ body {
   min-height: 175px;
 }
 
+/* ============================== */
+/* ICON AND CONTROL BUTTONS       */
+/* ============================== */
 .jerry-icon,
 .pause-btn {
   background: transparent;
@@ -115,6 +124,9 @@ body {
   text-transform: uppercase;
 }
 
+/* ============================== */
+/* ACTIVE GAME AREA AND DROPLETS  */
+/* ============================== */
 /* Styling for the interactive dirty droplet */
 .dirty-droplet {
   /* Use clamp() to scale droplets responsively: minimum 60px, preferred 12vw, maximum 120px */
@@ -166,9 +178,18 @@ body {
   place-items: center;
   padding: 1.25rem;
   min-height: 42vh;
-  border-radius: 1.75rem;
+  border-radius: 2.15rem;
   background: linear-gradient(to bottom, #62a4af, rgb(2, 63, 80));
   border: 5px solid #1a1a1a;
+}
+
+.content-box.gameplay-crosshair {
+  cursor: crosshair;
+}
+
+.content-box.gameplay-crosshair .dirty-droplet,
+.content-box.gameplay-crosshair .clean-droplet {
+  cursor: crosshair;
 }
 
 .content-placeholder {
@@ -252,6 +273,9 @@ body {
   color: #ffc907;
 }
 
+/* ============================== */
+/* START SETUP AND DIFFICULTY UI  */
+/* ============================== */
 .start-setup {
   display: grid;
   justify-items: center;
@@ -300,7 +324,7 @@ body {
 }
 
 .difficulty-option:focus {
-  outline: 2px solid #22d3ee;
+  outline: 2px solid white;
   outline-offset: 2px;
 }
 
@@ -335,6 +359,9 @@ body {
   transform: scale(0.98);
 }
 
+/* ============================== */
+/* OVERLAY SCREENS AND RESULTS    */
+/* ============================== */
 /* Container for game result screens (win or lose) */
 .game-result-screen {
   position: absolute;
@@ -385,11 +412,11 @@ body {
 }
 
 .win-screen .result-title {
-  color: var(--green);
+  color: rgb(141, 248, 119);
 }
 
 .lose-screen .result-title {
-  color: var(--red);
+  color: rgb(255, 179, 179);
 }
 
 /* Message text for result screens */
@@ -404,7 +431,7 @@ body {
 .impurities-left {
   margin: 0.5rem 0;
   font-size: 0.86rem;
-  color: var(--muted);
+  color: f8fafc;
 }
 
 /* Final score display */
@@ -505,6 +532,9 @@ body {
   animation: scoreLossPulse 1s ease;
 }
 
+/* ============================== */
+/* DIALOGUE OVERLAY STYLING       */
+/* ============================== */
 /* Pause screen styling */
 .pause-screen {
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(96, 165, 250, 0.1));
@@ -512,7 +542,7 @@ body {
 }
 
 .pause-screen .result-title {
-  color: var(--brand);
+  color: #a2f4ff;
 }
 
 /* Container for pause menu buttons */
@@ -535,7 +565,19 @@ body {
 }
 
 .tutorial-screen .result-title {
-  color: #67e8f9;
+  color: #a2f4ff;
+}
+
+.dialogue-avatar-wrap {
+  margin: 0 0 0.45rem;
+  display: grid;
+  place-items: center;
+}
+
+.dialogue-avatar {
+  width: clamp(64px, 12vw, 88px);
+  height: clamp(64px, 12vw, 88px);
+  object-fit: cover;
 }
 
 .dialogue-speaker {
@@ -550,6 +592,27 @@ body {
 .dialogue-line {
   max-width: 520px;
   line-height: 1.5;
+}
+
+.dialogue-emphasis {
+  font-size: 1.18em;
+  font-weight: 800;
+  color: #facc15;
+}
+
+.dialogue-highlight-dirty {
+  color: var(--red);
+  font-weight: 800;
+}
+
+.dialogue-highlight-clean {
+  color: var(--green);
+  font-weight: 800;
+}
+
+.dialogue-highlight-purify {
+  color: var(--accent);
+  font-weight: 800;
 }
 
 .result-details {
@@ -601,6 +664,9 @@ body {
 }
 
 
+/* ============================== */
+/* RESPONSIVE BREAKPOINTS         */
+/* ============================== */
 /* Tablet breakpoint: keep the same top/bottom bar layout and scale sizes */
 @media (max-width: 820px) {
   .game-shell {
