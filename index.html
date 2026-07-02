@@ -3,14 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
+  <link rel="icon" href="img/water-can-transparent.png" type="image/x-icon">
   <title>The Purifier | charity: water</title>
+
   <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
   <div class="game-shell">
     <header class="top-bar">
         <a class="jerry-icon" aria-label="Game brand" href="https://www.charitywater.org/" target="_blank">
-          <img src="img/water-can-transparent.png" alt="Water can icon" />
+          <img class="jerry-icon-default" src="img/water-can-transparent.png" alt="Water can icon">
+          <img class="jerry-icon-visit" src="img/visitUs.png" alt="Visit us">
         </a>
 
       <div class="status-display">
@@ -26,6 +29,7 @@
 
     <main class="content-box" aria-label="Main content area with interactive droplets">
       <div class="start-setup" id="startSetup">
+        <img class="game-title-image" src="img/title.png" alt="The Purifier title">
         <p class="difficulty-label">MISSION DIFFICULTY</p>
         <div class="difficulty-options" role="group" aria-label="Select game difficulty">
           <button class="difficulty-option is-active" type="button" data-difficulty="easy" aria-pressed="true">EASY</button>

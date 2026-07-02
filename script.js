@@ -31,6 +31,8 @@ let gamePaused = false; // Tracks if the game is paused
 let countdownInterval = null; // Reference to countdown interval for cleanup
 let spawnInterval = null; // Reference to spawn interval for cleanup
 let pauseBtn = document.getElementById("pauseBtn"); // Reference to pause button
+let halfwayMilestoneShown = false; // Ensures the half-purified milestone triggers once per mission.
+let milestoneTimeoutId = null; // Holds timeout for auto-hiding milestone banner.
 
 // Shooting SFX pool used when any droplet is clicked.
 const shootingSoundPaths = [
@@ -98,7 +100,7 @@ const introDialogueLines = [
   },
   {
     speaker: "JERRY",
-    line: "Your mission is simple: clean every DIRTY droplet you find.",
+    line: "Your mission is simple: clean every DIRTY droplet you find by tapping on them.",
   },
   {
     speaker: "JERRY",
@@ -246,6 +248,7 @@ function handleDropletClick(event, dropletType) {
     if (currentImpurities > 0) {
       currentImpurities--;
       impuritiesDisplay.textContent = currentImpurities;
+      showHalfwayMilestone();
 
       // Check if the player has cleared all impurities (win condition)
       if (currentImpurities === 0) {
@@ -361,6 +364,78 @@ function startSpawningDroplets() {
 }
 
 
+// ==============================
+// MILESTONE FLOW
+// ==============================
+// Reuses or creates the in-game milestone banner element.
+function ensureMilestoneBanner() {
+  let milestoneBanner = document.getElementById("halfwayMilestoneBanner");
+
+  if (!milestoneBanner) {
+    milestoneBanner = document.createElement("div");
+    milestoneBanner.id = "halfwayMilestoneBanner";
+    milestoneBanner.className = "gameplay-milestone";
+    milestoneBanner.setAttribute("role", "status");
+    milestoneBanner.setAttribute("aria-live", "polite");
+    contentBox.appendChild(milestoneBanner);
+  }
+
+  return milestoneBanner;
+}
+
+
+// Hides and cleans up milestone visuals.
+function hideMilestoneBanner() {
+  const milestoneBanner = document.getElementById("halfwayMilestoneBanner");
+  if (milestoneBanner) {
+    milestoneBanner.classList.remove("is-visible");
+  }
+
+  if (milestoneTimeoutId) {
+    clearTimeout(milestoneTimeoutId);
+    milestoneTimeoutId = null;
+  }
+}
+
+
+// Shows the milestone banner with a fresh fade-in/fade-out cycle.
+function showMilestoneBannerMessage(message) {
+  const milestoneBanner = ensureMilestoneBanner();
+  milestoneBanner.textContent = message;
+
+  if (milestoneTimeoutId) {
+    clearTimeout(milestoneTimeoutId);
+    milestoneTimeoutId = null;
+  }
+
+  milestoneBanner.classList.remove("is-visible");
+  requestAnimationFrame(function() {
+    milestoneBanner.classList.add("is-visible");
+  });
+
+  milestoneTimeoutId = setTimeout(function() {
+    milestoneBanner.classList.remove("is-visible");
+    milestoneTimeoutId = null;
+  }, 2200);
+}
+
+
+// Shows a one-time milestone when half the impurities are purified.
+function showHalfwayMilestone() {
+  if (halfwayMilestoneShown || !gameStarted || gameOver) {
+    return;
+  }
+
+  const purifiedCount = initialImpurities - currentImpurities;
+  const halfwayTarget = Math.ceil(initialImpurities / 2);
+
+  if (purifiedCount < halfwayTarget) {
+    return;
+  }
+
+  halfwayMilestoneShown = true;
+  showMilestoneBannerMessage("!!! ALERT: 50% CONTAMINANTS PURIFIED !!!");
+}
 
 // ==============================
 // PAUSE MENU FLOW
@@ -461,6 +536,7 @@ function winGame() {
 
   // Restore default cursor in end screen.
   setGameplayCrosshair(false);
+  hideMilestoneBanner();
   
   // Calculate bonus points based on remaining time (50 points per second)
   const bonusPoints = timerValue * 50;
@@ -517,6 +593,7 @@ function loseGame() {
 
   // Restore default cursor in end screen.
   setGameplayCrosshair(false);
+  hideMilestoneBanner();
   
   // Clear any remaining droplets on the screen
   clearAllDroplets();
@@ -844,6 +921,8 @@ function startGame() {
   gameStarted = true;
   gameOver = false;
   gamePaused = false;
+  halfwayMilestoneShown = false;
+  hideMilestoneBanner();
 
   // Reset game variables
   currentScore = 0;
